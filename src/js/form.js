@@ -724,7 +724,6 @@ Form.prototype.setEventHandlers = function() {
     this.view.$.on( 'change.file',
         'input:not(.ignore), select:not(.ignore), textarea:not(.ignore)',
         function() {
-            const $input = $( this );
             const input = this;
             const n = {
                 path: that.input.getName( input ),
@@ -748,9 +747,9 @@ Form.prototype.setEventHandlers = function() {
 
             if ( updated ) {
                 that.validateInput( input )
-                    .then( valid => {
+                    .then( () => {
                         // propagate event externally after internal processing is completed
-                        $input.trigger( 'valuechange', valid );
+                        input.dispatchEvent( new events.XFormsValueChanged() );
                     } );
             }
         } );

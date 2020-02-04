@@ -7,6 +7,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ---------------------
 ##### Changed
 - No longer trigger an inputupdate event when loading an existing itemset value.
+- "valuechange" event was changed to "xforms-value-changed" (TBC!)
 
 [5.11.7] - 2020-01-28
 ---------------------

@@ -21,6 +21,7 @@
                     </person>
                     <person>
                         <age>100</age>
+                        <age_changed/>
                         <d>bb</d>
                     </person>
                     <count>6</count>
@@ -48,6 +49,7 @@
             <setvalue event="odk-new-repeat" ref="/data/person/age" value="../../my_age + 2" />
             <input ref="/data/person/age">
                 <label>Person's age</label>
+                <setvalue event="xforms-value-changed" ref="/data/person/age_changed">Age changed!</setvalue>
             </input>
         </repeat>
     </h:body>
