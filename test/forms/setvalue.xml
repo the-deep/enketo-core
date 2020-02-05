@@ -17,6 +17,7 @@
                     <my_age>3</my_age>
                     <person>
                         <age/>
+                        <age_changed/>
                         <d/>
                     </person>
                     <person>

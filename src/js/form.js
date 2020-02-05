@@ -222,8 +222,11 @@ Form.prototype.init = function() {
     // Handle odk-instance-first-load event
     this.model.events.addEventListener( events.InstanceFirstLoad().type, event => this.calc.setValue( event ) );
 
-    //Handle odk-new-repeat event before initializing repeats
+    // Handle odk-new-repeat event before initializing repeats
     this.view.html.addEventListener( events.NewRepeat().type, event => this.calc.setValue( event ) );
+
+    // Handle xforms-value-changed
+    this.view.html.addEventListener( events.XFormsValueChanged().type, event => this.calc.setValue( event ) );
 
     loadErrors = loadErrors.concat( this.model.init() );
 
@@ -749,7 +752,7 @@ Form.prototype.setEventHandlers = function() {
                 that.validateInput( input )
                     .then( () => {
                         // propagate event externally after internal processing is completed
-                        input.dispatchEvent( new events.XFormsValueChanged() );
+                        input.dispatchEvent( new events.XFormsValueChanged( { repeatIndex: n.index } ) );
                     } );
             }
         } );
