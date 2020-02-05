@@ -118,7 +118,8 @@ export default {
             // Only this event requires specific index targeting through the "updated" object
             nodes = this.form.getRelatedNodes( 'data-setvalue', `[data-event*="${event.type}"]`, event.detail ).get();
         } else if ( event.type === new events.XFormsValueChanged().type ) {
-            const setValueNode = event.target.closest( '.question' ).querySelector( `[data-setvalue][data-event*="${event.type}"]` );
+            const question = event.target.closest( '.question' );
+            const setValueNode = question ? question.querySelector( `[data-setvalue][data-event*="${event.type}"]` ) : null;
             if ( setValueNode ) {
                 nodes = [ setValueNode ];
             }

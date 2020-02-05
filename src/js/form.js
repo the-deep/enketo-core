@@ -752,7 +752,7 @@ Form.prototype.setEventHandlers = function() {
                 that.validateInput( input )
                     .then( () => {
                         // propagate event externally after internal processing is completed
-                        input.dispatchEvent( new events.XFormsValueChanged( { repeatIndex: n.index } ) );
+                        input.dispatchEvent( events.XFormsValueChanged( { repeatIndex: n.index } ) );
                     } );
             }
         } );
