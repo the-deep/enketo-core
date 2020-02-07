@@ -47,7 +47,7 @@
         </input>
         <select1 ref="/data/my_age" appearance="minimal">
             <label>Your age</label>
-            <setvalue event="xforms-value-changed" ref="/data/my_age_changed" value="3+3"/>
+            <setvalue event="xforms-value-changed" ref="/data/my_age_changed" value="../my_age+100"/>
             <item>
                 <label>10</label>
                 <value>10</value>

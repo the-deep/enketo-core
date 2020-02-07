@@ -372,7 +372,7 @@ describe( 'setvalue actions to populate a value if another value changes', () =>
 
         setTimeout( () => {
             //expect( myAgeChangedView.textContent ).toEqual( '6' );
-            expect( myAgeChangedModel.textContent ).toEqual( '6' );
+            expect( myAgeChangedModel.textContent ).toEqual( '111' );
             done();
         }, 100 );
     } );
