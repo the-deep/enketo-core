@@ -138,8 +138,9 @@ export default {
             const cacheKey = `${context}:${itemsXpath}`;
 
             if ( fragmentsCache[ cacheKey ] ) {
-                optionsFragment = fragmentsCache[ cacheKey ].optionsFragment;
-                optionsTranslationsFragment = fragmentsCache[ cacheKey ].optionsTranslationsFragment;
+                // important: leave cache intact by cloning
+                optionsFragment = fragmentsCache[ cacheKey ].optionsFragment.cloneNode( true );
+                optionsTranslationsFragment = fragmentsCache[ cacheKey ].optionsTranslationsFragment.cloneNode( true );
             } else {
                 $instanceItems.each( function() {
                     const item = this;
@@ -205,7 +206,10 @@ export default {
                     }
 
                 } );
-                fragmentsCache[ cacheKey ] = { optionsFragment, optionsTranslationsFragment };
+                fragmentsCache[ cacheKey ] = {
+                    optionsFragment: optionsFragment.cloneNode( true ),
+                    optionsTranslationsFragment: optionsTranslationsFragment.cloneNode( true )
+                };
             }
 
             template.parentNode.appendChild( optionsFragment );
