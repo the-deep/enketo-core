@@ -15,7 +15,7 @@ export default {
      */
     update( updated = {} ) {
         const that = this;
-        const itemsCache = {};
+        const fragmentsCache = {};
         let $nodes;
 
         if ( !this.form ) {
@@ -95,19 +95,23 @@ export default {
              * Determining the index is expensive, so we only do this when the itemset is inside a cloned repeat.
              * It can be safely set to 0 for other branches.
              */
-            const insideRepeat = ( clonedRepeatsPresent && $input.parentsUntil( '.or', '.or-repeat' ).length > 0 ) ? true : false;
+            //const insideRepeat = ( clonedRepeatsPresent && $input.parentsUntil( '.or', '.or-repeat' ).length > 0 ) ? true : false;
             const insideRepeatClone = ( clonedRepeatsPresent && $input.parentsUntil( '.or', '.or-repeat.clone' ).length > 0 ) ? true : false;
             const index = ( insideRepeatClone ) ? that.form.input.getIndex( $input[ 0 ] ) : 0;
 
-            if ( typeof itemsCache[ itemsXpath ] !== 'undefined' ) {
-                $instanceItems = itemsCache[ itemsXpath ];
-            } else {
-                const safeToTryNative = true;
-                $instanceItems = $( that.form.model.evaluate( itemsXpath, 'nodes', context, index, safeToTryNative ) );
-                if ( !insideRepeat ) {
-                    itemsCache[ itemsXpath ] = $instanceItems;
-                }
-            }
+            //if ( typeof itemsCache[ itemsXpath ] !== 'undefined' ) {
+            //console.log( 'getting items from cache', itemsXpath );
+            // $instanceItems = itemsCache[ itemsXpath ];
+            // } else {
+            //console.log( 'no cache for', itemsXpath );
+            const safeToTryNative = true;
+            // Caching has no effect here. This is a very quick query (natively).
+            $instanceItems = $( that.form.model.evaluate( itemsXpath, 'nodes', context, index, safeToTryNative ) );
+            //if ( !insideRepeat ) {
+
+            //itemsCache[ itemsXpath ] = $instanceItems;
+            //}
+            // }
 
             // This property allows for more efficient 'itemschanged' detection
             newItems.length = $instanceItems.length;
@@ -128,73 +132,81 @@ export default {
             $question.find( templateNodeName ).not( $template ).remove();
             // labels for current <option> elements
             const optionsTranslations = $question.find( '.or-option-translations' ).empty()[ 0 ];
-            const optionsFragment = document.createDocumentFragment();
-            const optionsTranslationsFragment = document.createDocumentFragment();
+            let optionsFragment = document.createDocumentFragment();
+            let optionsTranslationsFragment = document.createDocumentFragment();
             let translations = [];
+            const cacheKey = `${context}:${itemsXpath}`;
 
-            $instanceItems.each( function() {
-                const item = this;
-                /*
-                 * Note: $labelRefs could either be
-                 * - a single itext reference
-                 * - a collection of labels with different lang attributes
-                 * - a single label
-                 */
-                const labels = that.getNodesFromItem( labelRef, item );
-                if ( !labels || !labels.length ) {
-                    translations = [ { language: '', label: 'error', active: true } ];
-                } else {
-                    switch ( labelType ) {
-                        case 'itext':
-                            // Search in the special .itemset-labels created in enketo-transformer for labels with itext ref.
-                            translations = $labels.find( `[data-itext-id="${labels[ 0 ].textContent}"]` ).get().map( label => {
-                                const language = label.getAttribute( 'lang' );
-                                const type = label.nodeName;
-                                const src = label.src;
-                                const text = label.textContent;
-                                const active = label.classList.contains( 'active' );
-                                const alt = label.alt;
-                                return { language, type, text, active, src, alt };
-                            } );
-                            break;
-                        case 'langs':
-                            translations = labels.map( label => {
-                                const lang = label.getAttribute( 'lang' );
-                                // Two falsy values should set active to true.
-                                const active = ( !lang && !that.form.langs.currentLang ) || ( lang === that.form.langs.currentLang );
-                                return { language: lang, type: 'span', text: label.textContent, active };
-                            } );
-                            break;
-                        default:
-                            translations = [ { language: '', type: 'span', text: labels && labels.length ? labels[ 0 ].textContent : 'error', active: true } ];
-                    }
-                }
-                // Obtain the value of the secondary instance item found.
-                const value = that.getNodeFromItem( valueRef, item ).textContent;
-                /**
-                 * #510 Show warning if select_multiple value has spaces
-                 */
-                const multiple = ( inputAttributes[ 'data-type-xml' ] == 'select' ) && ( inputAttributes[ 'type' ] == 'checkbox' ) || ( $list[ 0 ] && $list[ 0 ].multiple );
-                if ( multiple && ( value.indexOf( ' ' ) > -1 ) ) {
-                    alerts[ alerts.length ] = t( 'alert.valuehasspaces.multiple', { value: value } );
-                }
-                if ( templateNodeName === 'label' ) {
-                    optionsFragment.appendChild( that.createInput( inputAttributes, translations, value ) );
-                } else if ( templateNodeName === 'option' ) {
-                    let activeLabel = '';
-                    if ( translations.length > 1 ) {
-                        translations.forEach( translation => {
-                            if ( translation.active ) {
-                                activeLabel = translation.text;
-                            }
-                            optionsTranslationsFragment.appendChild( that.createOptionTranslation( translation, value ) );
-                        } );
+            if ( fragmentsCache[ cacheKey ] ) {
+                optionsFragment = fragmentsCache[ cacheKey ].optionsFragment;
+                optionsTranslationsFragment = fragmentsCache[ cacheKey ].optionsTranslationsFragment;
+            } else {
+                $instanceItems.each( function() {
+                    const item = this;
+                    /*
+                     * Note: $labelRefs could either be
+                     * - a single itext reference
+                     * - a collection of labels with different lang attributes
+                     * - a single label
+                     */
+                    const labels = that.getNodesFromItem( labelRef, item );
+                    if ( !labels || !labels.length ) {
+                        translations = [ { language: '', label: 'error', active: true } ];
                     } else {
-                        activeLabel = translations[ 0 ].text;
+                        switch ( labelType ) {
+                            case 'itext':
+                                // Search in the special .itemset-labels created in enketo-transformer for labels with itext ref.
+                                translations = $labels.find( `[data-itext-id="${labels[ 0 ].textContent}"]` ).get().map( label => {
+                                    const language = label.getAttribute( 'lang' );
+                                    const type = label.nodeName;
+                                    const src = label.src;
+                                    const text = label.textContent;
+                                    const active = label.classList.contains( 'active' );
+                                    const alt = label.alt;
+                                    return { language, type, text, active, src, alt };
+                                } );
+                                break;
+                            case 'langs':
+                                translations = labels.map( label => {
+                                    const lang = label.getAttribute( 'lang' );
+                                    // Two falsy values should set active to true.
+                                    const active = ( !lang && !that.form.langs.currentLang ) || ( lang === that.form.langs.currentLang );
+                                    return { language: lang, type: 'span', text: label.textContent, active };
+                                } );
+                                break;
+                            default:
+                                translations = [ { language: '', type: 'span', text: labels && labels.length ? labels[ 0 ].textContent : 'error', active: true } ];
+                        }
                     }
-                    optionsFragment.appendChild( that.createOption( activeLabel, value ) );
-                }
-            } );
+                    // Obtain the value of the secondary instance item found.
+                    const value = that.getNodeFromItem( valueRef, item ).textContent;
+                    /**
+                     * #510 Show warning if select_multiple value has spaces
+                     */
+                    const multiple = ( inputAttributes[ 'data-type-xml' ] == 'select' ) && ( inputAttributes[ 'type' ] == 'checkbox' ) || ( $list[ 0 ] && $list[ 0 ].multiple );
+                    if ( multiple && ( value.indexOf( ' ' ) > -1 ) ) {
+                        alerts[ alerts.length ] = t( 'alert.valuehasspaces.multiple', { value: value } );
+                    }
+                    if ( templateNodeName === 'label' ) {
+                        optionsFragment.appendChild( that.createInput( inputAttributes, translations, value ) );
+                    } else if ( templateNodeName === 'option' ) {
+                        let activeLabel = '';
+                        if ( translations.length > 1 ) {
+                            translations.forEach( translation => {
+                                if ( translation.active ) {
+                                    activeLabel = translation.text;
+                                }
+                                optionsTranslationsFragment.appendChild( that.createOptionTranslation( translation, value ) );
+                            } );
+                        } else {
+                            activeLabel = translations[ 0 ].text;
+                        }
+                        optionsFragment.appendChild( that.createOption( activeLabel, value ) );
+                    }
+
+                } );
+                fragmentsCache[ cacheKey ] = { optionsFragment, optionsTranslationsFragment };
+            }
 
             template.parentNode.appendChild( optionsFragment );
             if ( optionsTranslations ) {
