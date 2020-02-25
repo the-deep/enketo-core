@@ -251,6 +251,24 @@ function resizeImage( file, maxPixels ) {
     } );
 }
 
+/**
+ * This function tries to determine whether an XPath expression is static.
+ * Hopefully in the future it can do this properly, but for now it considers any expression
+ * with a non-numeric (position) predicate to be dynamic.
+ * 
+ * @static
+ * @param {string} expr - XPath expression to analyze
+ * @return {boolean} Whether expression contains a predicate
+ */
+function isDynamic( expr ) {
+    const containsPredicate = /\[.+\]/.test( expr );
+    if ( !containsPredicate ) {
+        return false;
+    }
+    const containsNumericPredicate = /\[\d+\]/.test( expr )
+    return !containsNumericPredicate;
+}
+
 export {
     parseFunctionFromExpression,
     stripQuotes,
@@ -261,5 +279,6 @@ export {
     dataUriToBlobSync,
     getPasteData,
     updateDownloadLink,
-    resizeImage
+    resizeImage,
+    isDynamic
 };

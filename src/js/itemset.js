@@ -89,7 +89,8 @@ export default {
              * I am not sure what is correct, but for now for XLSForm-style secondary instances with only one level underneath the <item>s that
              * the nodeset retrieves, Enketo's aproach works well.
              */
-            const context = that.form.input.getName( $input[ 0 ] );
+            // Shared datalists are under .or-repeat-info. Context is not relevant as these are static lists (without relative nodes).
+            const context = template.parentElement.parentElement.matches( '.or-repeat-info' ) ? null : that.form.input.getName( $input[ 0 ] );
 
             /*
              * Determining the index is expensive, so we only do this when the itemset is inside a cloned repeat.

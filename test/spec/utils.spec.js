@@ -85,3 +85,18 @@ describe( 'return postfixed filenames', () => {
         } );
     } );
 } );
+
+describe( 'analyzes whether XPath expression is dynamic', () => {
+    [
+        [ '/path/to/node', false ],
+        [ '/path/to/node[name=/path/to/another/node]', true ],
+        [ 'instance("countries")/root/item', false ],
+        [ 'instance("countries")/root/item[43]', false ],
+        [ 'instance("countries")/root/item[label=current()/../answer]', true ]
+    ].forEach( test => {
+        it( `correctly determines that ${test[0]} is ${test[1] === true ? '': 'not '}dynamic`, () => {
+            expect( utils.isDynamic( test[ 0 ] ) ).toEqual( test[ 1 ] );
+        } );
+    } );
+
+} );
